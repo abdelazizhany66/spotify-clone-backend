@@ -23,4 +23,25 @@ export class UsersService {
     }
     return user;
   }
+
+  async findById(id:number){
+    return await this.userRepo.findOneBy({id})
+  }
+
+  async updateSecretKey(userId:number,secret:string){
+    return await this.userRepo.update({id:userId},{
+      towFASecret:secret,
+      enable2FA:true
+    })
+  }
+
+  async disable2FA(userId:number){
+  return await this.userRepo.update(
+    {id:userId},
+    {
+     enable2FA:false,
+     towFASecret:null as any
+    })
+ }
+
 }

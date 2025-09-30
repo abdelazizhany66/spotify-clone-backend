@@ -10,6 +10,7 @@ import { User } from './users/users-entity';
 import { Artist } from './artists/artist-entity';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { ArtistsModule } from './artists/artists.module';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { UsersModule } from './users/users.module';
     }),
     SongsModule,
     AuthModule,
-    UsersModule
+    UsersModule,
+    ArtistsModule
   ],
   controllers: [AppController],
   providers: [AppService,
