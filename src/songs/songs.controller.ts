@@ -1,8 +1,9 @@
-import { Body, Controller, DefaultValuePipe, Delete, Get, Inject, Param, ParseIntPipe, Patch, Post, Query, Scope } from '@nestjs/common';
+import { Body, Controller, DefaultValuePipe, Delete, Get, Inject, Param, ParseIntPipe, Patch, Post, Query, Scope, UseGuards } from '@nestjs/common';
 import { SongsService } from './songs.service'
 import { CreateSongDTO } from './dto/create-song-dto';
 import type { Connection } from '../common/constatnts/connection';
 import { UpdateSongDTO } from './dto/update-song-dto';
+import { JwtAuthGuard } from '../auth/jwt-guard';
 
 @Controller({path:'songs', scope: Scope.REQUEST})
 export class SongsController {
@@ -15,6 +16,7 @@ export class SongsController {
   }
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   create(@Body() CreateSongDTO:CreateSongDTO){
     return this.SongsService.create(CreateSongDTO)
   }

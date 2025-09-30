@@ -5,27 +5,20 @@ import { AppService } from './app.service';
 import { SongsModule } from './songs/songs.module';
 import { LoggerMiddleware } from './common/middleware/logger/logger.middleware';
 import { DevConfigService } from './common/providers/DevConfigService';
-import { Song } from './songs/song.entity';
-import { User } from './users/users-entity';
-import { Artist } from './artists/artist-entity';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { ArtistsModule } from './artists/artists.module';
+import { dataSourceOptions } from 'migration/data-source';
+import { PlaylistModule } from './playlist/playlist.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres', 
-      database:'spotify-clone',
-      host:'localhost',
-      port:5432,
-      username:'postgres',
-      password:'1102000',
-      entities:[Song, User, Artist],
-      synchronize:true
-    }),
+    TypeOrmModule.forRoot(dataSourceOptions),
     SongsModule,
     AuthModule,
-    UsersModule
+    UsersModule,
+    ArtistsModule,
+    PlaylistModule
   ],
   controllers: [AppController],
   providers: [AppService,

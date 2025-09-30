@@ -1,5 +1,5 @@
 import { Entity, JoinColumn, ManyToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Song } from "../songs/song.entity";
+import { Song } from "../songs/song-entity";
 import { User } from "../users/users-entity";
 
 @Entity('artists')

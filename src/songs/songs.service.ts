@@ -1,7 +1,7 @@
 import { Body, Injectable, NotFoundException, Scope } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
-import { Song } from './song.entity';
+import { Song } from './song-entity';
 import { CreateSongDTO } from './dto/create-song-dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Artist } from 'src/artists/artist-entity';
@@ -18,7 +18,7 @@ export class SongsService {
   async create(@Body() createSongDTO:CreateSongDTO){
     const song = this.songRepo.create(createSongDTO)
     //search in artists repostry and save valus in song.artist+
-    const artist = await this.artistRepo.findByIds(createSongDTO.artists)
+    const artist = await this.artistRepo.findBy({id: In(createSongDTO.artists)})
     song.artists = artist
     return this.songRepo.save(song)
   }

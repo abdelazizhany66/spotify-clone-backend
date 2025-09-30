@@ -1,7 +1,8 @@
 import { Exclude } from "class-transformer";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Playlist } from "../playlist/playlist-entity";
 
-@Entity('Users')
+@Entity('users')
 export class User{
   @PrimaryGeneratedColumn()
   id:number
@@ -18,4 +19,14 @@ export class User{
   @Column()
   @Exclude()
   password:string
+
+  @Column({ nullable:true, type:'text'})
+  towFASecret:string 
+
+  @Column({ default:false, type: 'boolean' })
+  enable2FA:boolean
+
+   @OneToMany(() => Playlist, (playList) => playList.user)
+  playLists: Playlist[];
+
 }
