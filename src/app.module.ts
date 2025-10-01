@@ -7,19 +7,30 @@ import { LoggerMiddleware } from './common/middleware/logger/logger.middleware';
 import { DevConfigService } from './common/providers/DevConfigService';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { AppDataSource } from 'migration/data-source';
+import { PlaylistModule } from './playlist/playlist.module';
+import { ArtistsModule } from './artists/artists.module';
+import { ConfigModule } from '@nestjs/config';
+import { validate } from 'env.validation';
+import * as dotenv from 'dotenv';
+import { RedisModule } from './redis/redis.module';
+
+dotenv.config()
+
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(dataSourceOptions),
+    ConfigModule.forRoot({
+      isGlobal:true,
+      validate:validate
+    }),
+    TypeOrmModule.forRoot({...AppDataSource.options}),
     SongsModule,
+    PlaylistModule,
     AuthModule,
     UsersModule,
-<<<<<<< HEAD
     ArtistsModule,
-    PlaylistModule
-=======
-    ArtistsModule
->>>>>>> 8b5295877762631aee4b6f23b4635364195ef67f
+    RedisModule
   ],
   controllers: [AppController],
   providers: [AppService,

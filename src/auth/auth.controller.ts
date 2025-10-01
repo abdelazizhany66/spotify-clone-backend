@@ -5,8 +5,10 @@ import { LoginDTO } from './dto/login-dto';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-guard';
 import { ValidateTokenDTO } from './dto/validate-token-dto';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @Controller('auth')
+@ApiTags('auth')
 export class AuthController {
   constructor(
     private AuthService : AuthService,
@@ -14,14 +16,26 @@ export class AuthController {
   ){}
 
   @Post('/signup')
+  @ApiOperation({ summary: 'Register new user'})
+  @ApiResponse({
+    status: 201,
+    description: 'it will return the user in the response'
+  })
   signup(@Body() createUserDTO:CreateUserDTO){
     return this.UsersService.create(createUserDTO)
   }
 
+
+  @ApiOperation({ summary: 'Login user' })
+  @ApiResponse({
+    status: 200,
+    description: 'It will give you the access_token in the response',
+  })
   @Post('/login')
   login(@Body() loginDTO: LoginDTO){
     return this.AuthService.login(loginDTO)
   }
+  
 
   @Get('enable-2fa')
   @UseGuards(JwtAuthGuard)

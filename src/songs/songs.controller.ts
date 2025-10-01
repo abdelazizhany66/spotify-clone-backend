@@ -4,8 +4,11 @@ import { CreateSongDTO } from './dto/create-song-dto';
 import type { Connection } from '../common/constatnts/connection';
 import { UpdateSongDTO } from './dto/update-song-dto';
 import { JwtAuthGuard } from '../auth/jwt-guard';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @Controller({path:'songs', scope: Scope.REQUEST})
+@ApiTags('songs')
+@ApiBearerAuth('JWT-auth')
 export class SongsController {
   constructor(
     private SongsService:SongsService,
