@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import * as speeakeasy from 'speakeasy'
 import { UsersService } from '../users/users.service';
@@ -6,21 +6,66 @@ import { LoginDTO } from './dto/login-dto';
 import { JwtService } from '@nestjs/jwt';
 import { PayLoadType } from './types';
 import { ArtistsService } from '../artists/artists.service';
+import { RedisService } from '../redis/redis.service';
+import { CreateUserDTO } from 'src/users/dto/create-user-dto';
 
 @Injectable()
 export class AuthService {
 constructor(
   private usersService:UsersService,
   private JwtService : JwtService,
-  private ArtistsService : ArtistsService
+  private ArtistsService : ArtistsService,
+  private readonly redisService: RedisService
 ){}
 
+  async generateTokens(email:string, userId: number) {
+		const payload = { email, userId };
+		const accessToken = this.JwtService.sign(payload, {
+			expiresIn: process.env.ACCESSTOKEN_LIFETIME,
+			secret: process.env.JWT_SECRET,
+		});
+
+		const refreshToken = this.JwtService.sign(payload, {
+			expiresIn: process.env.REFRESHTOKEN_LIFETIME,
+			secret: process.env.REFRESH_TOKEN_SECRET,
+		});
+
+		return {
+			accessToken,
+			refreshToken,
+		};
+	}
+
+ async signup(createUserDTO:CreateUserDTO){
+  const {email, password} = createUserDTO
+   const dupUser = await this.usersService.findOne(email)
+  if(dupUser){
+    throw new BadRequestException('user already exist please log in')
+  }
+     
+  
+  createUserDTO.password = await bcrypt.hash(password,10)
+   
+  const user = await this.usersService.create(createUserDTO)
+
+  const { accessToken, refreshToken } = await this.generateTokens(user.email, user.id)
+  await this.redisService.setRefreshToken(user.id, refreshToken)
+
+  return {
+    user,
+    accessToken,
+    refreshToken
+  }
+ 
+ }
+
  async login(loginDTO:LoginDTO){
-  const user = await this.usersService.findOne(loginDTO)
+  const {email, password} = loginDTO
+  const user = await this.usersService.findOne(email)
     if (!user) {
     throw new UnauthorizedException('User not found');
     }
-  const passwordMatch = await bcrypt.compare(loginDTO.password ,user.password)
+  const passwordMatch = await bcrypt.compare(password ,user.password)
     if(!passwordMatch){
       throw new UnauthorizedException('password does not match')
     }
@@ -38,10 +83,28 @@ constructor(
     }
   }
 
-  const accessToken = this.JwtService.sign(payload)
+  const {accessToken, refreshToken} = await this.generateTokens(user.email,user.id)
+  await this.redisService.setRefreshToken(user.id,refreshToken)
+
   return {
-    accessToken
+    accessToken,
+    refreshToken
     };
+ }
+// valid refresh token sent from front is exist to redis or not and renew access token if expire
+ async refreshToken(refreshToken:string){
+  const payload = this.JwtService.verify(refreshToken,{
+    secret: process.env.REFRESH_TOKEN_SECRET
+  })
+  const sortToken = await this.redisService.getRefreshToken(payload.userId)
+
+  if(sortToken !== refreshToken){
+    throw new UnauthorizedException('invalid refresh token')
+  }
+
+  const { accessToken } = await this.generateTokens(payload.email,payload.userId)
+
+  return { accessToken }
  }
 
  async enable2FA(userId:number){
@@ -72,7 +135,7 @@ constructor(
       encoding: 'base32',
       window: 1
     })
-    console.log("Secret in DB:", user.towFASecret);
+
     if(verified){
       return { verified: true }
     }else{
@@ -83,5 +146,11 @@ constructor(
   async disable2FA(userId:number){
     return this.usersService.disable2FA(userId)
   }
+
+  async signout(userId: number) {
+		console.log(userId);
+		await this.redisService.deleteRefreshToken(userId);
+		return 'signout success';
+	}
 
 }

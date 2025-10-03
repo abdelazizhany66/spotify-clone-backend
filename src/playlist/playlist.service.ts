@@ -5,6 +5,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { In, Repository } from 'typeorm';
 import { User } from '../users/users-entity';
 import { CreatePlayListDto } from './dto/create-playlist-dto';
+import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
 export class PlayListsService {
@@ -17,6 +18,7 @@ export class PlayListsService {
 
     @InjectRepository(User)
     private userRepo: Repository<User>,
+     private readonly redisService: RedisService
   ) {}
 
   async create(playListDTO: CreatePlayListDto): Promise<Playlist> {
@@ -30,7 +32,16 @@ export class PlayListsService {
       throw new NotFoundException('not found user')
     }
     playList.user = user;
-
-    return this.playListRepo.save(playList);
+    await this.redisService.setUserPlaylist(user.id, playList);
+   return playList
   }
+
+  async get(userId:number){
+    const playlist = await this.redisService.getUserPlaylist(userId);
+    if(!playlist){
+      throw new NotFoundException('no playlist for you')
+    }
+    return playlist
+  }
+
 }

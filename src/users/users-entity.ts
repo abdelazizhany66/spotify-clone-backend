@@ -20,6 +20,9 @@ export class User{
   @Exclude()
   password:string
 
+  @Column({ nullable: true })
+  avatar: string;
+
   @Column({ nullable:true, type:'text'})
   towFASecret:string 
 

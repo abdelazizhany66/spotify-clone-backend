@@ -1,10 +1,11 @@
-import { Body, Injectable, NotFoundException, Scope } from '@nestjs/common';
+import {  Injectable, NotFoundException, Scope, UnauthorizedException } from '@nestjs/common';
 import { In, Repository } from 'typeorm';
 import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { Song } from './song-entity';
 import { CreateSongDTO } from './dto/create-song-dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Artist } from 'src/artists/artist-entity';
+import { Artist } from '../artists/artist-entity';
+import { RedisService } from '../redis/redis.service';
 
 @Injectable({
   scope: Scope.TRANSIENT,
@@ -12,10 +13,15 @@ import { Artist } from 'src/artists/artist-entity';
 export class SongsService {
   constructor(
     @InjectRepository(Song) private songRepo:Repository<Song>,
-    @InjectRepository(Artist) private artistRepo: Repository<Artist>
+    @InjectRepository(Artist) private artistRepo: Repository<Artist>,
+    private readonly redisService : RedisService
   ){}
 
-  async create(@Body() createSongDTO:CreateSongDTO){
+  async create(userId:number ,createSongDTO:CreateSongDTO){
+    const user = await this.artistRepo.findOne({where:{id:userId}})
+     if(!user){
+      throw new UnauthorizedException("you don't have premission to create songe artist only create ")
+    }
     const song = this.songRepo.create(createSongDTO)
     //search in artists repostry and save valus in song.artist+
     const artist = await this.artistRepo.findBy({id: In(createSongDTO.artists)})
@@ -60,7 +66,22 @@ export class SongsService {
     const queryBuilder = await this.songRepo.createQueryBuilder('c')
      queryBuilder.orderBy('c.releasedDate','DESC')
   return paginate<Song>(queryBuilder, options);
-}
+  }
 
+  async addScore(songId:number){
+    await this.redisService.incrementSongPlayCount(songId);
+    return { success: true, message: 'Song play count updated' };
+  } 
+  
+  async topSongs(limit:number){
+
+    return await this.redisService.getTopSongs(Number(limit));
+    
+  }
+
+  async getRank(songId:number){
+    const rank = await this.redisService.getSongRank(songId);
+    return { success: true, data: { songId, rank } };
+  }
 
 }

@@ -11,13 +11,13 @@ export class UsersService {
   constructor(@InjectRepository(User) private userRepo:Repository<User>){}
 
   async create(userDto:CreateUserDTO){
-    const salt = await bcrypt.genSalt()
-    userDto.password = await bcrypt.hash(userDto.password,salt)
-    const user = await this.userRepo.save(userDto)
-    return user
+    const user = this.userRepo.create(userDto)
+    return await this.userRepo.save(user)
   }
-  findOne(data:LoginDTO){
-    const user =  this.userRepo.findOneBy({email:data.email}) //{where:{email:data.email}}
+
+  
+  findOne(email:string){
+    const user =  this.userRepo.findOneBy({email}) //{where:{email:data.email}}
     if(!user){
       throw new UnauthorizedException('Cloud not find user')
     }
@@ -42,6 +42,6 @@ export class UsersService {
      enable2FA:false,
      towFASecret:null as any
     })
- }
+ } 
 
 }

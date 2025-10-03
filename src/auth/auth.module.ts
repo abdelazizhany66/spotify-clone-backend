@@ -5,25 +5,29 @@ import { AuthService } from './auth.service';
 import { UsersModule } from '../users/users.module';
 import { JwtStrategy } from './jwt-strategy';
 import { ArtistsModule } from '../artists/artists.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { RedisModule } from '../redis/redis.module';
 
 @Module({
   imports:[
-    UsersModule,JwtModule
-    .registerAsync({
-      imports:[ConfigModule],
-      useFactory:async (configService:ConfigService)=>({
-        secret: configService.get<string>('secret'),
+    UsersModule,
+    ArtistsModule,
+    RedisModule,
+    JwtModule
+    .register({
+			secret: process.env.JWT_SECRET,
         signOptions:{
-        expiresIn:'1d'
+        expiresIn:process.env.ACCESSTOKEN_LIFETIME
         },
-      }),
-    inject:[ConfigService]
+
   }),
-    ArtistsModule
+   
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [
+    AuthService,
+    JwtStrategy
+  ],
   exports:[AuthService],
 })
 export class AuthModule {}
+  

@@ -12,6 +12,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe())
   //swagger 
+
+   if (process.env.SHOW_SWAGGER === 'true') {
   const config = new DocumentBuilder()
     .setTitle('Spotify Clone')
     .setDescription('The Spotify Clone API Documentation')
@@ -31,6 +33,8 @@ async function bootstrap() {
     .build()
   const document = SwaggerModule.createDocument(app,config)
   SwaggerModule.setup('api',app,document)
+
+}
 
   await app.listen(parseInt(process.env.PORT!));
   //speed app using webpack

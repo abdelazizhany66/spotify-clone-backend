@@ -1,4 +1,4 @@
-import { Entity, JoinColumn, ManyToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Song } from "../songs/song-entity";
 import { User } from "../users/users-entity";
 
@@ -6,6 +6,12 @@ import { User } from "../users/users-entity";
 export class Artist {
   @PrimaryGeneratedColumn()
   id:number
+
+  @Column()
+  stageName: string;
+
+  @Column({ nullable: true })
+  bio: string;
 
   @OneToOne(()=> User)
   @JoinColumn()

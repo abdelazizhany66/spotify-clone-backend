@@ -1,0 +1,9 @@
+services:
+  spotify-clone-app:
+    build: 
+      context: .
+      target: production
+    environment:
+      - NODE_ENV=production
+      - SHOW_SWAGGER=true
+    command: npm start
