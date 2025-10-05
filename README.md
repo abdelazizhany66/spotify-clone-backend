@@ -4,9 +4,7 @@
 
 ## Project Overview
 
-This project is a full-featured backend application for managing users, songs, playlists, and rankings.
-It uses **PostgreSQL** for persistent storage, **Redis** for caching and ranking, and is fully containerized with **Docker & Docker Compose**.
-Swagger UI is included for **interactive API documentation**. Artist accounts use **2FA authentication** to ensure secure logins.
+This project is a **full-stack backend application** designed for managing music streaming platforms. It provides comprehensive features for handling users, songs, playlists, and real-time rankings. Built with modern technologies including **PostgreSQL** for reliable data persistence, **Redis** for efficient caching and ranking systems, and fully containerized using **Docker & Docker Compose** for seamless deployment. The API is fully documented with **Swagger UI** for interactive testing and exploration. Enhanced security is implemented through **2FA authentication** specifically for artist accounts, ensuring secure access to privileged features.
 
 ---
 
