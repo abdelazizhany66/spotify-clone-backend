@@ -18,11 +18,19 @@ export class ArtistsService {
 
 
   async upgradeToArtist(userId: number, artistData: CreateArtistDto) {
-  const user = await this.usersService.findById( userId );
+  const user = await this.usersService.findById(userId);
   if (!user) {
     throw new NotFoundException('User not found');
   }
 
+  const existingArtist = await this.ArtistRepo.findOne({
+    where: { user: { id: userId } },
+  });
+
+  if (existingArtist) {
+    this.ArtistRepo.merge(existingArtist, artistData);
+    return this.ArtistRepo.save(existingArtist);
+  }
 
   const artist = this.ArtistRepo.create({
     ...artistData,
@@ -31,4 +39,5 @@ export class ArtistsService {
 
   return this.ArtistRepo.save(artist);
 }
+
 }

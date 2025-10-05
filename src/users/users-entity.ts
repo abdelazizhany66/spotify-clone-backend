@@ -24,6 +24,7 @@ export class User{
   avatar: string;
 
   @Column({ nullable:true, type:'text'})
+  @Exclude()
   towFASecret:string 
 
   @Column({ default:false, type: 'boolean' })

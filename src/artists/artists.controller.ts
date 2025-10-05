@@ -4,7 +4,7 @@ import { ArtistsService } from './artists.service';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from 'src/auth/jwt-guard';
 import { User } from 'src/users/users-entity';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller('artists')
 export class ArtistsController {
@@ -16,6 +16,7 @@ constructor(private readonly artistsService:ArtistsService){}
     status: 200,
     description: 'return artist user',
 })
+@ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard)
 async convertArtist(@CurrentUser() user: User, @Body() artistData: CreateArtistDto) {
   return this.artistsService.upgradeToArtist(user.id, artistData);

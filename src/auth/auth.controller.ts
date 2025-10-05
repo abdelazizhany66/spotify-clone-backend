@@ -1,15 +1,16 @@
-import { Body, Controller, Delete, Get, Post, Request, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Req, Request, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { CreateUserDTO } from 'src/users/dto/create-user-dto';
 import { LoginDTO } from './dto/login-dto';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-guard';
 import { ValidateTokenDTO } from './dto/validate-token-dto';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { User } from 'src/users/users-entity';
 import { ResponseUtil } from 'src/common/utils/response.util';
 import { serialize } from '../interseptors/serialize.interceptor';
 import { UserDto } from './dto/user-dto';
+import { RefreshTokenDto } from './dto/refresh-token-dto';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -42,22 +43,27 @@ export class AuthController {
     return ResponseUtil.success(user,'Login successful')
   }
   
-
-  @Post('/refreshToken')
-  @ApiOperation({ summary: 'refresh accesstoken when expirin' })
-  @ApiResponse({
-    status: 200,
-    description: 'It will renew accesstoken',
-  })
   
-  async refreshToken(@Body('refreshToken') refreshToken: string) {
+  // auth.controller.ts
+@Post('/refreshToken')
+@ApiOperation({ summary: 'refresh accesstoken when expirin' })
+@ApiResponse({
+  status: 200,
+  description: 'It will renew accesstoken',
+})
+async refreshToken(@Body() body: RefreshTokenDto) {
 
-      const tokens = await this.AuthService.refreshToken(refreshToken);
-      if(!tokens){
-        throw new UnauthorizedException('no token')
-      }
-      return ResponseUtil.success(tokens, 'Token refreshed successfully');
+  const refreshToken = body.refreshToken;
+  
+  if (!refreshToken) {
+    throw new UnauthorizedException('Refresh token is required');
   }
+    const tokens = await this.AuthService.refreshToken(refreshToken);
+    return ResponseUtil.success(tokens, 'Token refreshed successfully');
+
+}
+
+  
 
   @Get('enable-2fa')
   @ApiOperation({ summary: 'field in user if skip 2fa will be true' })
@@ -65,7 +71,7 @@ export class AuthController {
     status: 200,
     description: 'It will {enable2fa:true} in the response',
   })
-
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
   async enable2FA(@Request() req){
     const enable2fa = await this.AuthService.enable2FA(req.user.userId)
@@ -79,7 +85,7 @@ export class AuthController {
     status: 200,
     description: 'the login steps is finished you can doing anything in your account',
   })
-
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
   async validate2FA(@Request() req, @Body() ValidateTokenDTO:ValidateTokenDTO){
     const validateToken = await this.AuthService.validate2FAToken(
@@ -91,23 +97,13 @@ export class AuthController {
 
   }
 
-  @Get('disable-2fa')
-  @UseGuards(JwtAuthGuard)
-  async disable2FA(@Request() req){
-    const disable2fa = await this.AuthService.disable2FA(req.user.userId)
-    return ResponseUtil.success(disable2fa, 'Disable is success to Two Factor Authentication ');
-  }
 
-  @Delete('logout')
-  @ApiOperation({ summary: 'Logout current user' })
-  @ApiResponse({
-    status: 200,
-    description: 'It will delete access_token ',
-  })
-  @UseGuards(JwtAuthGuard)
-  async logout(@CurrentUser() user:User){
-    const result = await this.AuthService.signout(user.id)
-   return ResponseUtil.success(result, 'Logout successful');
-  }
+ @Post('logout')
+@ApiBearerAuth('JWT-auth')
+@UseGuards(JwtAuthGuard)
+async logout(@CurrentUser() user: User){
+  await this.AuthService.signout(user.id);
+  return ResponseUtil.success('signout success', 'Logout successful');
+}
 
 }

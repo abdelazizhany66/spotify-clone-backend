@@ -14,6 +14,8 @@ import { diskStorage } from 'multer';
 import { UsersService } from './users.service';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-guard';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { User } from './users-entity';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)
@@ -21,7 +23,7 @@ import { JwtAuthGuard } from '../auth/jwt-guard';
 @ApiBearerAuth('JWT-auth')
 export class UsersController {
   constructor( private usersService: UsersService){}
-  @Post('/upload-avatar/:id')
+  @Post('/upload-avatar')
   //swagger
 
   @ApiConsumes('multipart/form-data') 
@@ -59,17 +61,16 @@ export class UsersController {
   )
   async uploadAvatar(
   @UploadedFile() file: Express.Multer.File,
-  @Param('id') userId: number,
+  @CurrentUser() user: User,
 ) {
-  console.log(file);
 
-  const user = await this.usersService.findById(userId);
-  if(!user){
+  const currentuser = await this.usersService.findById(user.id);
+  if(!currentuser){
     throw new NotFoundException()
   }
-  user.avatar = file.filename;
+  currentuser.avatar = file.filename;
 
-  return { message: 'Avatar uploaded successfully!', avatar: user.avatar };
+  return { message: 'Avatar uploaded successfully!', avatar: currentuser.avatar };
 }
 
   @Get('profile')

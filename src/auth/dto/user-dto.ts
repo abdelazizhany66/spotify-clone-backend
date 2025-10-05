@@ -17,6 +17,7 @@ export class UserDto {
   avatar: string | null;
 
   @Expose()
+  @Exclude()
   towFASecret: string | null;
 
   @Expose()

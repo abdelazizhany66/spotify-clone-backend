@@ -4,7 +4,7 @@ import { IsNotEmpty, IsString } from "class-validator";
 export class CreateUserDTO {
 
   @ApiProperty({
-      example:'Adhm',
+      example:'Your first Name',
       description: 'provide the firstName of the user'
     })
   @IsString()
@@ -12,7 +12,7 @@ export class CreateUserDTO {
   firstName:string
 
   @ApiProperty({
-    example: 'Hany',
+    example: 'Your Last Name',
     description: 'provide the lastName of the user',
   })
   @IsString()

@@ -18,7 +18,7 @@ async function bootstrap() {
     .setTitle('Spotify Clone')
     .setDescription('The Spotify Clone API Documentation')
     .setVersion('1.0')
-     .addBearerAuth(
+    .addBearerAuth(
       // Enable Bearer Auth here
       {
         type: 'http',

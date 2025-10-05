@@ -11,9 +11,6 @@ export class Song {
   @Column()
   title:string;
 
-  // @Column('varchar',{array:true})
-  // artists:string[];
-
   @Column('date')
   releasedDate:Date;
 
@@ -27,6 +24,6 @@ export class Song {
   @JoinTable({name:'songes-artists'})
   artists: Artist[]
 
-  @ManyToOne(() => Playlist, (playList) => playList.songs)
-  playList: Playlist;
+   @ManyToMany(() => Playlist, (playlist) => playlist.songs)
+  playlists: Playlist[];
 }

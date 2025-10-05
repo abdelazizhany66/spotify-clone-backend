@@ -21,27 +21,66 @@ export class PlayListsService {
      private readonly redisService: RedisService
   ) {}
 
-  async create(playListDTO: CreatePlayListDto): Promise<Playlist> {
-    const playList = this.playListRepo.create(playListDTO)
-
-    const songs = await this.songsRepo.findBy({id: In(playListDTO.songs),}) //findByIds(playListDTO.songs);
+ async create(playListDTO: CreatePlayListDto): Promise<Playlist> {
+    const playList = this.playListRepo.create(playListDTO);
+    
+    const songs = await this.songsRepo.findBy({ id: In(playListDTO.songs) });
     playList.songs = songs;
 
     const user = await this.userRepo.findOneBy({ id: playListDTO.user });
-    if(!user){
-      throw new NotFoundException('not found user')
-    }
+    if (!user) throw new NotFoundException('User not found');
     playList.user = user;
+    
+    await this.playListRepo.save(playList);
+
     await this.redisService.setUserPlaylist(user.id, playList);
-   return playList
+
+    return playList;
   }
 
-  async get(userId:number){
-    const playlist = await this.redisService.getUserPlaylist(userId);
-    if(!playlist){
-      throw new NotFoundException('no playlist for you')
+async get(userId: number) {
+  
+  const dbPlaylist = await this.playListRepo.findOne({
+    where: { user: { id: userId } },
+    relations: ['songs', 'user']
+  });
+
+  if (!dbPlaylist) throw new NotFoundException('No playlist for you');
+
+  await this.redisService.setUserPlaylist(userId, dbPlaylist);
+
+  return dbPlaylist;
+}
+
+  async addSongToPlaylist(userId: number, songId: number) {
+    const song = await this.songsRepo.findOneBy({ id: songId });
+    if (!song) throw new NotFoundException('Song not found');
+    
+    await this.redisService.addSongToPlaylist(userId, songId);
+    
+    const playlist = await this.playListRepo.findOne({
+      where: { user: { id: userId } },
+      relations: ['songs']
+    });
+    
+    if (playlist && !playlist.songs.some(s => s.id === songId)) {
+      playlist.songs.push(song);
+      await this.playListRepo.save(playlist);
     }
-    return playlist
   }
 
+  async removeSongFromPlaylist(userId: number, songId: number) {
+
+    await this.redisService.removeSongFromPlaylist(userId, songId);
+    
+    const playlist = await this.playListRepo.findOne({
+      where: { user: { id: userId } },
+      relations: ['songs']
+    });
+    
+    if (playlist) {
+      playlist.songs = playlist.songs.filter(song => song.id !== songId);
+      await this.playListRepo.save(playlist);
+    }
+  }
 }

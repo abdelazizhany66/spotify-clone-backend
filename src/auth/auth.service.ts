@@ -76,15 +76,17 @@ constructor(
     payload.artistId = artist.id
   }
 
-  if(user.towFASecret && user.enable2FA){
-    return {
-      validate2FA:'http://localhost:3000/auth/validate-2fa',
-      message: 'Please send the one time password or token from you Google Authenticator App'
-    }
-  }
-
   const {accessToken, refreshToken} = await this.generateTokens(user.email,user.id)
   await this.redisService.setRefreshToken(user.id,refreshToken)
+
+    if(user.towFASecret && user.enable2FA){
+    return {
+      validate2FA:'http://localhost:3000/auth/validate-2fa',
+      message: 'Please send the one time password or token from you Google Authenticator App',
+       accessToken,
+      refreshToken
+    }
+  }
 
   return {
     accessToken,
@@ -143,9 +145,6 @@ constructor(
     }
   }
 
-  async disable2FA(userId:number){
-    return this.usersService.disable2FA(userId)
-  }
 
   async signout(userId: number) {
 		console.log(userId);

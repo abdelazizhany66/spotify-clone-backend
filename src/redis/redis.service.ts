@@ -4,6 +4,7 @@ import Redis from "ioredis";
 @Injectable()
 export class RedisService {
 	constructor(@Inject('REDIS_CLIENT') private readonly client: Redis) {}
+
   async setRefreshToken(userId: number, refreshToken: string) {
     // token valid for 7 days
     await this.client.set(`refresh:${userId}`, refreshToken, 'EX' ,7 * 24 * 60 * 60);
@@ -17,15 +18,59 @@ export class RedisService {
     await this.client.del(`refresh:${userId}`);
   }
 
+////////////////////////////////////////////////////////
+ async setUserPlaylist(userId: number, playlist: any) {
+  const key = `user:${userId}:playlist`;
+  
+  await this.client.hset(key, {
+    'id': playlist.id.toString(),
+    'name': playlist.name,
+    'createdAt': playlist.createdAt || new Date().toISOString(),
+    'updatedAt': new Date().toISOString()
+  });
 
-   async setUserPlaylist(userId: number, playlist: any) {
-    await this.client.hset(`user:${userId}:playlist`, playlist);
+  if (playlist.songs && playlist.songs.length > 0) {
+    await this.client.hset(key, 'songs', JSON.stringify(playlist.songs));
+  } else {
+    await this.client.hset(key, 'songs', '[]');
+  }
+}
+
+async getUserPlaylist(userId: number): Promise<any> {
+  const key = `user:${userId}:playlist`;
+  
+  const playlistData = await this.client.hgetall(key);
+  if (!playlistData || Object.keys(playlistData).length === 0) {
+    return null;
   }
 
-  async getUserPlaylist(userId: number) {
-    const playlist = await this.client.hgetall(`user:${userId}:playlist`);
-    return Object.keys(playlist).length ? playlist : null;
+  const songs = playlistData.songs ? JSON.parse(playlistData.songs) : [];
+
+  return {
+    id: parseInt(playlistData.id),
+    name: playlistData.name,
+    createdAt: playlistData.createdAt,
+    updatedAt: playlistData.updatedAt,
+    songs: songs 
+  };
+}
+
+  async addSongToPlaylist(userId: number, songId: number) {
+    await this.client.sadd(`user:${userId}:playlist:songs`, songId.toString());
+    await this.client.hset(`user:${userId}:playlist`, 'updatedAt', new Date().toISOString());
   }
+
+  async removeSongFromPlaylist(userId: number, songId: number) {
+    await this.client.srem(`user:${userId}:playlist:songs`, songId.toString());
+    await this.client.hset(`user:${userId}:playlist`, 'updatedAt', new Date().toISOString());
+  }
+
+  async deleteUserPlaylist(userId: number) {
+    await this.client.del(`user:${userId}:playlist`);
+    await this.client.del(`user:${userId}:playlist:songs`);
+  }
+
+///////////////////////////////////////////////////////
 
   async incrementSongPlayCount(songId: number) {
     await this.client.zincrby('songs:popularity', 1, `song:${songId}`);
@@ -47,4 +92,10 @@ export class RedisService {
     return rank !== null ? rank + 1 : null;
   }
   
+async clearUserPlaylist(userId: number) {
+  const key = `user:${userId}:playlist`;
+  await this.client.del(key);
+  console.log('🗑️ Cleared Redis cache for user:', userId);
+}
+
 }
