@@ -112,7 +112,7 @@ We provide interactive API documentation using **Swagger UI** which allows you t
   ![Swagger UI](./docs/validate2fa.png)
 
 
-**POST /auth/refreshToken**
+* **POST /auth/refreshToken**
   Description: Refresh the authentication token.
   Body: { "refreshToken": "string" }
   ![Swagger UI](./docs/refreshtoken.png)
@@ -229,13 +229,13 @@ We provide interactive API documentation using **Swagger UI** which allows you t
 
   Headers: Authorizatio[n: Bea](https://www.docker.com/get-started)rer[ ](https://docs.docker.com/compose/install/)
 
-  
+
 ---
 ### Prerequisites
 
 Make sure you have the following installed on your system:
 
-* **Node.js** (v16 or higher) - [Download here](https://nodejs.org/)
+* **Node.js** (v18 or higher) - [Download here](https://nodejs.org/)
 * **Docker** - [Get Docker](https://www.docker.com/get-started)  
 * **Docker Compose** - [Install guide](https://docs.docker.com/compose/install/)
 
