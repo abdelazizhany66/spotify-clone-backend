@@ -104,6 +104,7 @@ We provide interactive API documentation using **Swagger UI** which allows you t
   Headers: Authorization: Bearer
   ![Swagger UI](./docs/enable2fa.png)
 
+
 * **POST/auth/validate-2fa**
   Description: validate 2FA Secret in Google Authentication.
   Headers: Authorization: Bearer
@@ -111,9 +112,7 @@ We provide interactive API documentation using **Swagger UI** which allows you t
   ![Swagger UI](./docs/validate2fa.png)
 
 
-*  
-
-  **POST /auth/refreshToken**
+**POST /auth/refreshToken**
   Description: Refresh the authentication token.
   Body: { "refreshToken": "string" }
   ![Swagger UI](./docs/refreshtoken.png)
@@ -123,6 +122,8 @@ We provide interactive API documentation using **Swagger UI** which allows you t
   Headers: Authorization: Bearer
   ![Swagger UI](./docs/logout.png) 
 
+
+
 ### User
 
 * **GET /users/profile**
@@ -130,13 +131,15 @@ We provide interactive API documentation using **Swagger UI** which allows you t
   Headers: Authorization: Bearer 
   ![Swagger UI](./docs/get-profile.png)
 
-* **PATCH /user/upload-avatar/:id**
+* **POST /user/upload-avatar/:id**
   Description: upload avatar .
   Params: id
   Body: {avatar : file }
   Headers: Authorization: Bearer 
   ![Swagger UI](./docs/upload-image.png)
-*  
+
+
+
 
 ### Song
 
@@ -181,7 +184,9 @@ We provide interactive API documentation using **Swagger UI** which allows you t
   Descripion: get song rank in songs  .
   Headers: Authorization: Bearer
   ![Swagger UI](./docs/song-rank.png)
-*  
+
+
+
 
 ### PlayList
 
@@ -205,7 +210,8 @@ We provide interactive API documentation using **Swagger UI** which allows you t
   Description: remove song from playlist .
   Headers: Authorization: Bearer
   ![Swagger UI](./docs/remove-song-from-playlist.png)
-*
+
+
 
 ### Artist
 
@@ -219,16 +225,19 @@ We provide interactive API documentation using **Swagger UI** which allows you t
   Body: CreateArtistDto
   Headers: Authorization: Bearer 
   ![Swagger UI](./docs/upgrade-to-artist.png)
-*
+
+
   Headers: Authorizatio[n: Bea](https://www.docker.com/get-started)rer[ ](https://docs.docker.com/compose/install/)
 
+  
 ---
+### Prerequisites
 
-## [Ge](https://docs.docker.com/compose/install/)[tti](https://docs.docker.com/compose/install/)[ng ](https://www.docker.com/get-started)Sta[rte](https://docs.docker.com/compose/install/)[d](https://www.docker.com/get-started)
+Make sure you have the following installed on your system:
 
-### [Pre](https://www.docker.com/get-started)[requi](https://docs.docker.com/compose/install/)[sites](https://docs.docker.com/compose/install/)
-
-* [Doc](https://docs.docker.com/compose/install/)[ker](https://www.docker.com/get-started) & [Docker Compose](https://docs.docker.com/compose/install/)
+* **Node.js** (v16 or higher) - [Download here](https://nodejs.org/)
+* **Docker** - [Get Docker](https://www.docker.com/get-started)  
+* **Docker Compose** - [Install guide](https://docs.docker.com/compose/install/)
 
 ### Installation
 
@@ -242,7 +251,7 @@ cd spotify-clone-backend
 
 Create a `.env` file in the root directory and add the following parameters:
 
-```
+```env
 DB_HOST=your_database_host
 DB_PORT=your_database_port
 DB_USERNAME=your_database_username
@@ -290,5 +299,4 @@ docker-compose -f docker-compose.yml -f docker-compose-prod.yml up -d --build
 docker-compose -f docker-compose.yml -f docker-compose-prod.yml down
 ```
 
-[The application w](http://localhost:3000)[ill run at ](http://localhost:3000)[http://localhost:3000](http://localhost:3000).
-
+The application will run at **http://localhost:3000**.
